@@ -21,16 +21,13 @@ import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.JCoTable;
 
 public class RfcCaller implements IApiCaller {
+	private static IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
 	@Override
 	public ObjectTree getObjectTree(LinkedObject linkedObject, boolean forceRefresh) {
 
 		ObjectTree rfcObjectTree = getObjectTree(linkedObject);
-
-		if (forceRefresh == false & rfcObjectTree != null) {
-			return rfcObjectTree;
-		}
-		return getNewObjectTree(linkedObject);
+		return (forceRefresh || rfcObjectTree == null) ? getNewObjectTree(linkedObject) : rfcObjectTree;
 
 	}
 
@@ -41,15 +38,7 @@ public class RfcCaller implements IApiCaller {
 			JCoDestination destination = JCoDestinationManager.getDestination(destinationId);
 			JCoFunction function = destination.getRepository().getFunction("Z_ADTCO_GET_OBJECT_TREE");
 			if (function == null) {
-				ObjectTree newObjectTree = new ObjectTree(linkedObject);
-				SourceNode sourceNode = new SourceNode(1);
-				sourceNode.setName("DummyNode");
-				sourceNode.setText1("Z_ADTCO_GET_OBJECT_TREE not found. "
-						+ "This plugin needs a ABAP Backend components that have to be installed in the system in order to use it."
-						+ "Use abapGit to install repository from https://github.com/fidley/ADT-Classic-Outline-Backend");
-				sourceNode.setType("CO");
-				newObjectTree.addChild(sourceNode);
-				return newObjectTree;
+				return createDummyObjectTree(linkedObject);
 			}
 			function.getImportParameterList().getField("OBJECT_NAME").setValue(linkedObject.getParentName());
 			function.getImportParameterList().getField("OBJECT_TYPE").setValue(linkedObject.getParentType());
@@ -68,51 +57,51 @@ public class RfcCaller implements IApiCaller {
 
 		JCoException e) {
 			e.printStackTrace();
-			return null;
+			return createDummyObjectTree(linkedObject);
 		}
+	}
+
+	private ObjectTree createDummyObjectTree(LinkedObject linkedObject) {
+		ObjectTree newObjectTree = new ObjectTree(linkedObject);
+		SourceNode sourceNode = new SourceNode(1);
+		sourceNode.setName("DummyNode");
+		sourceNode.setText1(
+				"Z_ADTCO_GET_OBJECT_TREE not found. This plugin needs a ABAP Backend components that have to be installed in the system in order to use it. Use abapGit to install repository from https://github.com/fidley/ADT-Classic-Outline-Backend");
+		sourceNode.setType("CO");
+		newObjectTree.addChild(sourceNode);
+		return newObjectTree;
 	}
 
 	private void addParametersForTreeCall(JCoFunction function) {
 		try {
-			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 			JCoTable parametersTable = function.getImportParameterList().getTable("PARAMETERS");
-			parametersTable.appendRow();
-			parametersTable.setValue("NAME", PreferenceConstants.P_FETCH_METHOD_REDEFINITIONS);
-			parametersTable.setValue("VALUE",
-					parseToAbapBool(store.getBoolean(PreferenceConstants.P_FETCH_METHOD_REDEFINITIONS)));
-			parametersTable.appendRow();
-			parametersTable.setValue("NAME", PreferenceConstants.P_LOAD_ALL_LEVELS_OF_SUBCLASSES);
-			parametersTable.setValue("VALUE",
-					parseToAbapBool(store.getBoolean(PreferenceConstants.P_LOAD_ALL_LEVELS_OF_SUBCLASSES)));
-			parametersTable.appendRow();
-			parametersTable.setValue("NAME", PreferenceConstants.P_LOAD_ALL_LEVELS_OF_REDEFINITIONS);
-			parametersTable.setValue("VALUE",
-					parseToAbapBool(store.getBoolean(PreferenceConstants.P_LOAD_ALL_LEVELS_OF_REDEFINITIONS)));
+			addBoolParameter(parametersTable, PreferenceConstants.P_FETCH_METHOD_REDEFINITIONS);
+			addBoolParameter(parametersTable, PreferenceConstants.P_LOAD_ALL_LEVELS_OF_SUBCLASSES);
+			addBoolParameter(parametersTable, PreferenceConstants.P_LOAD_ALL_LEVELS_OF_REDEFINITIONS);
 
 		} catch (Exception e) {
 			e.getLocalizedMessage();
 		}
 	}
 
+	private void addBoolParameter(JCoTable parametersTable, String parameterName) {
+		parametersTable.appendRow();
+		parametersTable.setValue("NAME", parameterName);
+		parametersTable.setValue("VALUE", parseToAbapBool(store.getBoolean(parameterName)));
+	}
+
 	private String parseToAbapBool(boolean booleanValue) {
-		if (booleanValue)
-			return "X";
-		return "";
+		return booleanValue ? "X" : "";
 	}
 
 	@Override
 	public ObjectTree getObjectTree(LinkedObject linkedObject) {
-		int count = 0;
-		while (objectsList.size() > count) {
-			ObjectTree rfcObjectTree = objectsList.get(count);
-			if (rfcObjectTree.getLinkedObject().getName() == linkedObject.getName()
-					&& rfcObjectTree.getLinkedObject().getProject().getName() == linkedObject.getProject().getName()
-					&& rfcObjectTree.getLinkedObject().getType() == linkedObject.getType()) {
-				return rfcObjectTree;
-			}
-			count++;
-		}
-		return null;
+		return objectsList.stream()
+				.filter(rfcObjectTree -> rfcObjectTree.getLinkedObject().getName().equals(linkedObject.getName())
+						&& rfcObjectTree.getLinkedObject().getProject().getName()
+								.equals(linkedObject.getProject().getName())
+						&& rfcObjectTree.getLinkedObject().getType().equals(linkedObject.getType()))
+				.findFirst().orElse(null);
 	}
 
 	@Override
