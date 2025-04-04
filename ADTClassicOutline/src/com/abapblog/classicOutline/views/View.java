@@ -256,12 +256,17 @@ public class View extends ViewPart implements ILinkedWithEditorView, ITreeConten
 
 	@Override
 	public void dispose() {
-		getSite().getPage().removePartListener(this.linkWithEditorPartListener);
+		removeLinkedToEditorListener();
 		removeSaveCommandListener();
 		currentTree = null;
 		container = null;
 		filteredTrees = new ArrayList<OutlineFilteredTree>();
 		super.dispose();
+	}
+
+	private void removeLinkedToEditorListener() {
+		final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		workbenchWindow.getPartService().removePartListener(this.linkWithEditorPartListener);
 	}
 
 	private void removeSaveCommandListener() {
