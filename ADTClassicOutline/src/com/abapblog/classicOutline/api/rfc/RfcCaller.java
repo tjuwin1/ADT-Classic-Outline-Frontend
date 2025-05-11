@@ -1,5 +1,7 @@
 package com.abapblog.classicOutline.api.rfc;
 
+import java.util.HashMap;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -22,6 +24,7 @@ import com.sap.conn.jco.JCoTable;
 
 public class RfcCaller implements IApiCaller {
 	private static IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+	private static HashMap<String, Boolean> RfcAuthorityForPorject = new HashMap<String, Boolean>();
 
 	@Override
 	public ObjectTree getObjectTree(LinkedObject linkedObject, boolean forceRefresh) {
@@ -36,7 +39,14 @@ public class RfcCaller implements IApiCaller {
 		try {
 			String destinationId = ProjectUtility.getDestinationID(linkedObject.getProject());
 			JCoDestination destination = JCoDestinationManager.getDestination(destinationId);
-			JCoFunction function = destination.getRepository().getFunction("Z_ADTCO_GET_OBJECT_TREE");
+			String fm = "Z_ADTCO_GET_OBJECT_TREE";
+
+			if (RfcAuthorityForPorject.containsKey(destinationId)) {
+				if (RfcAuthorityForPorject.get(destinationId).booleanValue() == false) {
+					return createDummyObjectTree(linkedObject);
+				}
+			}
+			JCoFunction function = destination.getRepository().getFunction(fm);
 			if (function == null) {
 				return createDummyObjectTree(linkedObject);
 			}
@@ -51,7 +61,7 @@ public class RfcCaller implements IApiCaller {
 				return RfcObjectTreeContentHandler.deserialize(linkedObject, objectTree);
 			} catch (AbapException e) {
 				System.out.println(e.toString());
-				return null;
+				return createDummyObjectTree(linkedObject);
 			}
 		} catch (
 
@@ -65,10 +75,26 @@ public class RfcCaller implements IApiCaller {
 		ObjectTree newObjectTree = new ObjectTree(linkedObject);
 		SourceNode sourceNode = new SourceNode(1);
 		sourceNode.setName("DummyNode");
-		sourceNode.setText1(
-				"Z_ADTCO_GET_OBJECT_TREE not found. This plugin needs a ABAP Backend components that have to be installed in the system in order to use it. Use abapGit to install repository from https://github.com/fidley/ADT-Classic-Outline-Backend");
+		sourceNode.setText1("Z_ADTCO_GET_OBJECT_TREE not found or you don't have RFC authorizations for it.");
 		sourceNode.setType("CO");
 		newObjectTree.addChild(sourceNode);
+
+		sourceNode = new SourceNode(2);
+		sourceNode.setName("DummyNode");
+		sourceNode.setText1("This plugin needs a ABAP Backend components that have to be installed in the system.");
+		sourceNode.setType("CO");
+		newObjectTree.addChild(sourceNode);
+
+		sourceNode = new SourceNode(3);
+		sourceNode.setName("DummyNode");
+		sourceNode.setText1(
+				"Use abapGit to install repository from https://github.com/fidley/ADT-Classic-Outline-Backend");
+		sourceNode.setType("CO");
+		newObjectTree.addChild(sourceNode);
+
+		if (!RfcAuthorityForPorject.containsKey(ProjectUtility.getDestinationID(linkedObject.getProject())))
+			RfcAuthorityForPorject.put(linkedObject.getProject().getName(), false);
+
 		return newObjectTree;
 	}
 

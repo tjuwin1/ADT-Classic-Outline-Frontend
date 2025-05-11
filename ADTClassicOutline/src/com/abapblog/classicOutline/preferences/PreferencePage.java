@@ -11,6 +11,7 @@ import com.abapblog.classicOutline.Activator;
 
 public class PreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	private final IPreferenceStore store;
+	public static final String ID = "com.abapblog.classicOutline.preferences.PreferencesPage";
 
 	public PreferencePage() {
 		super(GRID);
