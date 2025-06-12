@@ -18,6 +18,7 @@ public class PreferenceInitilizer extends AbstractPreferenceInitializer {
 		store.setDefault(PreferenceConstants.P_LOAD_ALL_LEVELS_OF_SUBCLASSES, false);
 		store.setDefault(PreferenceConstants.P_LOAD_ALL_LEVELS_OF_REDEFINITIONS, false);
 		store.setDefault(PreferenceConstants.P_TREE_NAVIGATION_TRIGGER, TreeNavigationEvent.DoubleClick.toString());
+		store.setDefault(PreferenceConstants.P_ACTIVATE_CORRECT_OUTLINE, true);
 	}
 
 }
