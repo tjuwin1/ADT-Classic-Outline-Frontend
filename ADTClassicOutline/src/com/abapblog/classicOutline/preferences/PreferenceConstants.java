@@ -7,5 +7,6 @@ public class PreferenceConstants {
 	public static final String P_LOAD_ALL_LEVELS_OF_REDEFINITIONS = "LoadAllLevelsOfRedefinitions";
 
 	public static final String P_TREE_NAVIGATION_TRIGGER = "TreeNavigationTrigger";
+	public static final String P_ACTIVATE_CORRECT_OUTLINE = "ActivateCorrectOutline";
 
 }

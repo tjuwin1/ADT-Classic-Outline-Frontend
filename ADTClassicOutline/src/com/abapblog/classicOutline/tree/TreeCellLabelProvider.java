@@ -15,7 +15,7 @@ public class TreeCellLabelProvider extends StyledCellLabelProvider {
 	@Override
 	public void dispose() {
 		super.dispose();
-		ImageToDispose.dispose();
+		// ImageToDispose.dispose();
 	}
 
 	@Override

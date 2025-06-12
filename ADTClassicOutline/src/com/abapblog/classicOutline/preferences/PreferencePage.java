@@ -36,6 +36,8 @@ public class PreferencePage extends FieldEditorPreferencePage implements IWorkbe
 						{ "Selection", TreeNavigationEvent.NodeSelection.toString() } },
 				getFieldEditorParent(), true);
 		addField(TreeNavigationTrigger);
+		addField(new BooleanFieldEditor(PreferenceConstants.P_ACTIVATE_CORRECT_OUTLINE,
+				"&Activate Classic Outline for ABAP nodes, and standard Eclipse Outline for others", getFieldEditorParent()));
 	}
 
 	@Override
