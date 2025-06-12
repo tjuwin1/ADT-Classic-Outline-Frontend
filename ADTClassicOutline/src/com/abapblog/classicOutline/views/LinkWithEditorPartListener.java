@@ -17,24 +17,38 @@ import com.sap.adt.tools.core.ui.editors.IAdtFormEditor;
 public class LinkWithEditorPartListener implements IPartListener2 {
 	private static final String CLASSIC_OUTLINE_VIEW_ID = "com.abapblog.classicOutline.view";
 	private static final String ECLIPSE_STANDARD_OUTLINE_VIEW_ID = "org.eclipse.ui.views.ContentOutline";
-	private final ILinkedWithEditorView view;
+	private static ILinkedWithEditorView view;
 	private static IEditorPart previousEditor = null;
 	// Check preference before opening views
 	private static final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+	private static LinkWithEditorPartListener instance = null;
 
-	public LinkWithEditorPartListener(ILinkedWithEditorView view) {
-		this.view = view;
+	public static LinkWithEditorPartListener get() {
+		if (instance == null) {
+			instance = new LinkWithEditorPartListener();
+		}
+		return instance;
+
+	}
+
+	private LinkWithEditorPartListener() {
+
 	}
 
 	@Override
 	public void partActivated(IWorkbenchPartReference ref) {
 		if (ref.getPart(true) instanceof IEditorPart) {
-			IEditorPart editor = view.getViewSite().getPage().getActiveEditor();
+
+			IEditorPart editor = ref.getPage().getActiveEditor();
 			if (editor == previousEditor) {
 				return;
 			}
 			previousEditor = editor;
-			view.editorActivated(editor);
+			try {
+				getView().editorActivated(editor);
+			} catch (Exception e) {
+
+			}
 
 			boolean activateCorrectOutline = store.getBoolean(PreferenceConstants.P_ACTIVATE_CORRECT_OUTLINE);
 			if (!activateCorrectOutline) {
@@ -78,24 +92,24 @@ public class LinkWithEditorPartListener implements IPartListener2 {
 
 	@Override
 	public void partBroughtToTop(IWorkbenchPartReference ref) {
-		if (ref.getPart(true) == view) {
-			view.editorActivated(view.getViewSite().getPage().getActiveEditor());
+		if (ref.getPart(true) == getView()) {
+			getView().editorActivated(getView().getViewSite().getPage().getActiveEditor());
 		}
 	}
 
 	@Override
 	public void partOpened(IWorkbenchPartReference ref) {
-		if (ref.getPart(true) == view) {
-			view.editorActivated(view.getViewSite().getPage().getActiveEditor());
+		if (ref.getPart(true) == getView()) {
+			getView().editorActivated(getView().getViewSite().getPage().getActiveEditor());
 		}
 	}
 
 	@Override
 	public void partVisible(IWorkbenchPartReference ref) {
-		if (ref.getPart(true) == view) {
-			IEditorPart editor = view.getViewSite().getPage().getActiveEditor();
+		if (ref.getPart(true) == getView()) {
+			IEditorPart editor = getView().getViewSite().getPage().getActiveEditor();
 			if (editor != null) {
-				view.editorActivated(editor);
+				getView().editorActivated(editor);
 			}
 		}
 	}
@@ -114,5 +128,17 @@ public class LinkWithEditorPartListener implements IPartListener2 {
 
 	@Override
 	public void partInputChanged(IWorkbenchPartReference ref) {
+	}
+
+	public ILinkedWithEditorView getView() {
+		if (view == null) {
+			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			IViewReference viewRef = page.findViewReference(CLASSIC_OUTLINE_VIEW_ID);
+			if (viewRef != null) {
+				view = (ILinkedWithEditorView) viewRef.getView(false);
+			}
+
+		}
+		return view;
 	}
 }
