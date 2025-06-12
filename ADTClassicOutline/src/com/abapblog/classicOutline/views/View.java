@@ -15,8 +15,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
@@ -36,7 +34,7 @@ public class View extends ViewPart implements ILinkedWithEditorView, ITreeConten
 	private Composite parent;
 	private static OutlineFilteredTree currentTree;
 	public static List<LinkedObject> linkedObjects = new ArrayList<>();
-	protected IPartListener2 linkWithEditorPartListener = new LinkWithEditorPartListener(this);
+//	protected IPartListener2 linkWithEditorPartListener = new LinkWithEditorPartListener(this);
 	public LinkedObject linkedObject = new LinkedObject(null, null);
 	public static ArrayList<OutlineFilteredTree> filteredTrees = new ArrayList<OutlineFilteredTree>();
 	private static Composite container;
@@ -256,7 +254,7 @@ public class View extends ViewPart implements ILinkedWithEditorView, ITreeConten
 
 	@Override
 	public void dispose() {
-		removeLinkedToEditorListener();
+		// removeLinkedToEditorListener();
 		removeSaveCommandListener();
 		currentTree = null;
 		container = null;
@@ -265,8 +263,9 @@ public class View extends ViewPart implements ILinkedWithEditorView, ITreeConten
 	}
 
 	private void removeLinkedToEditorListener() {
-		final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		workbenchWindow.getPartService().removePartListener(this.linkWithEditorPartListener);
+		// final IWorkbenchWindow workbenchWindow =
+		// PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		// workbenchWindow.getPartService().removePartListener(this.linkWithEditorPartListener);
 	}
 
 	private void removeSaveCommandListener() {
@@ -284,8 +283,8 @@ public class View extends ViewPart implements ILinkedWithEditorView, ITreeConten
 	}
 
 	private void setLinkingWithEditor() {
-		final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		workbenchWindow.getPartService().addPartListener(this.linkWithEditorPartListener);
+//		final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+//		workbenchWindow.getPartService().addPartListener(this.linkWithEditorPartListener);
 	}
 
 	public void reloadOutlineContent(boolean refresh, boolean async, boolean direct) {
