@@ -12,9 +12,14 @@ public class ApiCallerFactory {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		String apiCallType = store.getString(PreferenceInitilizer.APICallType);
 		switch (apiCallType) {
-		case PreferenceInitilizer.APIJCoCall: {
-			return new RfcCaller();
-		}
+			case PreferenceInitilizer.APIJCoCall: {
+				return new RfcCaller();
+				break;
+			}
+			case PreferenceInitilizer.APIRestCall:{
+				return new RestCaller();
+				break;
+			}
 		}
 		return null;
 	}

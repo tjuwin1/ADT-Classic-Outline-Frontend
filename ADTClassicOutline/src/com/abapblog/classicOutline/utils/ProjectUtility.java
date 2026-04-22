@@ -61,7 +61,12 @@ public class ProjectUtility {
 
 	public static String getDestinationID(IProject project) {
 
-		String destinationId = AdtCoreProjectServiceFactory.createCoreProjectService().getDestinationId(project);
+		IAbapProject abapProject = (IAbapProject) project
+				.getAdapter(IAbapProject.class);
+		AdtLogonServiceUIFactory.createLogonServiceUI().ensureLoggedOn(
+				abapProject.getDestinationData(),
+				PlatformUI.getWorkbench().getProgressService());		
+		String destinationId = abapProject.getDestinationId();
 		return destinationId;
 	}
 
